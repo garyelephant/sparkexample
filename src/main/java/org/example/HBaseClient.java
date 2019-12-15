@@ -12,8 +12,6 @@ import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Increment;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -24,20 +22,29 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 public class HBaseClient {
 
-  static Configuration conf =null;
+//  static Configuration conf =null;
   private static final String ZKconnect="nn01:2181";
-  static{
-    conf= HBaseConfiguration.create();
-    conf.set("hbase.zookeeper.quorum", ZKconnect);
-  }
+//  static{
+//    conf= HBaseConfiguration.create();
+//    conf.set("hbase.zookeeper.quorum", ZKconnect);
+//  }
 //  static String tableName="student";
 //  static String[] family={"lie01","lie02"};
 
 
   public static void main(String[] args) throws Exception {
 
+    Configuration conf = new Configuration();
+    conf.addResource("/path/to/core-site.xml");
+    conf.addResource("/path/to/hbase-site.xml");
+
     Connection connection = ConnectionFactory.createConnection(conf);
+
+    // 负债做DDL
     Admin admin = connection.getAdmin();
+
+    // DML 入口
+    Table table = connection.getTable(TableName.valueOf("hadoop_class"));
   }
 
 
@@ -66,7 +73,7 @@ public class HBaseClient {
   public void createTable(Admin admin, String tableName, String[] family) throws Exception {
 
     TableName tableNameObj = TableName.valueOf(tableName);
-    HTableDescriptor desc =new HTableDescriptor(tableNameObj);
+    HTableDescriptor desc = new HTableDescriptor(tableNameObj);
 
     for(int i=0; i<family.length; i++){
 
@@ -112,12 +119,18 @@ public class HBaseClient {
   /**
    * Put Data
    * */
-  public void putData(Connection conn, String tableName, String rowKey, String familyName, String columnName, String value)
+  public void putData(
+    Connection conn,
+    String tableName,
+    String rowKey,
+    String familyName,
+    String columnName,
+    String value)
     throws Exception {
 
     Table table = conn.getTable(TableName.valueOf(tableName));
 
-    Put put=new Put(Bytes.toBytes(rowKey));
+    Put put = new Put(Bytes.toBytes(rowKey));
     put.addColumn(Bytes.toBytes(familyName), Bytes.toBytes(columnName), Bytes.toBytes(value));
     table.put(put);
   }
@@ -126,7 +139,7 @@ public class HBaseClient {
    * checkAndPut
    * */
   public void checkAndPutData() {
-
+    // TODO:
   }
 
   /**
